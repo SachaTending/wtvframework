@@ -1,4 +1,4 @@
-from wtvframework import parsehttp, Minisrv, Service
+from wtvframework import parsehttp, Minisrv, Service, Responce
 
 def testparse():
     inp = """GET wtv-1800:/preregister
@@ -21,16 +21,11 @@ svc = Service()
 
 xd_data = """
 <h1>amogus</h1>
-"""
+<a href=\"wtv-brazil:/u-going-to-brazil\">brazil</a>"""
 
 @svc.addhandl("xd")
 def b(data):
-    return """200 OK
-Content-Type: text/html
-Content-Length: {len}
-\n
-{data}
-""".format(len=len(xd_data), data=xd_data)
+    return Responce(200, data=xd_data)
 
 @svc.addhandl("preregister")
 def a(data):
@@ -44,7 +39,37 @@ wtv-client-date: Fri, 28 Apr 2023 19:12:37 GMT
 Content-length: 0
 wtv-visit: wtv-1800:/xd
 wtv-service: reset
-wtv-service: name=wtv-1800 host=127.0.0.1 port=1615 flags=0x00000001 connections=1
+wtv-service: name=wtv-1800 host=127.0.0.1 port=1615 flags=0x00000002 connections=1
+wtv-service: name=wtv-brazil host=127.0.0.1 port=1615 flags=0x00000002
+wtv-service: name=NON-WTV-XD host=127.0.0.1 port=1615 flags=0x00000002
 \n"""
+
+svc2 = Service("wtv-brazil")
+
+brazil = """
+<h1>u going to brazil</h1>
+<h1>fun fact: webtv can open any service</h1>
+"""
+
+@svc2.addhandl("u-going-to-brazil")
+def c(data):
+    return Responce(400, err_data="U GOING TO BRASIL NOW")
+
+svc3 = Service("NON-WTV-XD".lower())
+data2 = """
+<h1>non wtv service xd</h1>"""
+@svc3.addhandl("")
+def nonwtv(data):
+    return """200 OK
+Content-Type: text/html
+Content-Length: {len}
+\n
+{data}
+""".format(len=len(data2), data=data2)
+
 m.addservice(svc)
+m.addservice(svc2)
+m.addservice(svc3)
 m.runserv()
+
+# client:ConfirmConnectSetup?serviceType=custom&machine=127.0.0.1&port=1615&useEncryption=true&connect=Connect
